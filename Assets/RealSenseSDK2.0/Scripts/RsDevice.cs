@@ -66,21 +66,28 @@ public class RsDevice : RsFrameProvider
     void OnEnable()
     {
         m_pipeline = new Pipeline();
-
-        using (var cfg = DeviceConfiguration.ToPipelineConfig())
-            ActiveProfile = m_pipeline.Start(cfg);
-
-        DeviceConfiguration.Profiles = ActiveProfile.Streams.Select(RsVideoStreamRequest.FromProfile).ToArray();
-
-        if (processMode == ProcessMode.Multithread)
+        try
         {
-            stopEvent.Reset();
-            worker = new Thread(WaitForFrames);
-            worker.IsBackground = true;
-            worker.Start();
-        }
+            using (var cfg = DeviceConfiguration.ToPipelineConfig())
+                ActiveProfile = m_pipeline.Start(cfg);
 
-        StartCoroutine(WaitAndStart());
+            DeviceConfiguration.Profiles = ActiveProfile.Streams.Select(RsVideoStreamRequest.FromProfile).ToArray();
+
+            if (processMode == ProcessMode.Multithread)
+            {
+                stopEvent.Reset();
+                worker = new Thread(WaitForFrames);
+                worker.IsBackground = true;
+                worker.Start();
+            }
+
+            StartCoroutine(WaitAndStart());
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"RealSense device not connected or failed to start: {e.Message}");
+            Streaming = false;
+        }
     }
 
     IEnumerator WaitAndStart()

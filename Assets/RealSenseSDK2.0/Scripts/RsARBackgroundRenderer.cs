@@ -11,7 +11,7 @@ public class RsARBackgroundRenderer : MonoBehaviour
     public RsFrameProvider Source;
     public Material material;
     private Camera cam;
-    private ARBackgroundRenderer bg;
+    // Removed ARBackgroundRenderer, not available in standard Unity
     private Intrinsics intrinsics;
     private RenderTexture rt;
 
@@ -28,12 +28,12 @@ public class RsARBackgroundRenderer : MonoBehaviour
 
         cam = GetComponent<Camera>();
 
-        bg = new ARBackgroundRenderer()
+        // Set camera clear flags and background material directly
+        if (cam != null)
         {
-            backgroundMaterial = material,
-            mode = ARRenderMode.MaterialAsBackground,
-            backgroundTexture = material.mainTexture
-        };
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = Color.clear;
+        }
 
         cam.depthTextureMode |= DepthTextureMode.Depth;
 
@@ -56,17 +56,7 @@ public class RsARBackgroundRenderer : MonoBehaviour
         light.AddCommandBuffer(LightEvent.AfterScreenspaceMask, copyScreenSpaceShadow);
     }
 
-    void OnEnable()
-    {
-        if (bg != null)
-            bg.mode = ARRenderMode.MaterialAsBackground;
-    }
-
-    void OnDisable()
-    {
-        if (bg != null)
-            bg.mode = ARRenderMode.StandardBackground;
-    }
+    // Removed OnEnable/OnDisable ARBackgroundRenderer mode switching
 
     void Update()
     {
